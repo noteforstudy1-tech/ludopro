@@ -278,8 +278,8 @@
         let localStream;
         let currentCall;
         const myIdPrefix = 'raghav-call-';
-        const randomId = Math.random().toString(36).substr(2, 6);
-        const myFullId = myIdPrefix + randomId;
+        const random4Digit = Math.floor(1000 + Math.random() * 9000).toString();
+        const myFullId = myIdPrefix + random4Digit;
 
         const localVideo = document.getElementById('local-video');
         const remoteVideo = document.getElementById('remote-video');
@@ -297,7 +297,13 @@
                 peer = new Peer(myFullId);
 
                 peer.on('open', (id) => {
-                    document.getElementById('my-id-display').innerText = id;
+                    // Only show the 4-digit part to the user
+                    const shortId = id.replace(myIdPrefix, '');
+                    document.getElementById('my-id-display').innerText = shortId;
+                    document.getElementById('my-id-display').style.fontSize = '2rem';
+                    document.getElementById('my-id-display').style.fontWeight = '800';
+                    document.getElementById('my-id-display').style.color = 'var(--accent-blue)';
+                    
                     document.getElementById('init-view').classList.add('hidden');
                     document.getElementById('call-view').classList.remove('hidden');
                     hideStatus();
@@ -323,10 +329,15 @@
         }
 
         function joinRoom() {
-            const remoteId = document.getElementById('remote-peer-id').value.trim();
-            if (!remoteId) return alert('Please enter a Room ID');
+            let remoteId = document.getElementById('remote-peer-id').value.trim();
+            if (!remoteId) return alert('Please enter a 4-Digit Room ID');
+            
+            // Auto-append prefix if only 4 digits provided
+            if (remoteId.length === 4 && !isNaN(remoteId)) {
+                remoteId = myIdPrefix + remoteId;
+            }
 
-            showStatus('Calling ' + remoteId + '...');
+            showStatus('Calling ' + remoteId.replace(myIdPrefix, '') + '...');
             const call = peer.call(remoteId, localStream);
             handleCall(call);
         }
